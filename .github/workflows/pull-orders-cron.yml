@@ -1,0 +1,21 @@
+name: Pull eBay orders
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  pull-orders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call pull-orders cron endpoint
+        run: |
+          status=$(curl -s -o response.json -w "%{http_code}" \
+            "https://dropflow-v6-backend-production.up.railway.app/api/cron/pull-orders?secret=${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $status"
+          cat response.json
+          if [ "$status" -ne 200 ]; then
+            echo "Cron call failed"
+            exit 1
+          fi
